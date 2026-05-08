@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auralis – AI Personal Safety System</title>
+  <meta name="description" content="Auralis is an AI-powered personal safety and emergency assistance system with real-time location tracking and instant alerts." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+  <div id="auth-view" class="screen active">
+    <div class="auth-bg-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="auth-container">
+      <div class="auth-brand">
+        <div class="brand-icon"><span class="shield-icon">🛡️</span></div>
+        <h1 class="brand-name">Auralis</h1>
+        <p class="brand-tagline">AI-Powered Personal Safety System</p>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form" class="auth-card">
+        <h2>Welcome Back</h2>
+        <p class="auth-sub">Sign in to activate your Guardian Network</p>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input id="login-email" type="email" placeholder="you@example.com" />
+        </div>
+        <button class="btn-primary full-width" onclick="handleLogin()">
+          <span>Activate Guardian</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <p class="auth-switch">New user? <a onclick="toggleAuthMode()">Create Account</a></p>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" class="auth-card" style="display:none;">
+        <h2>Create Account</h2>
+        <p class="auth-sub">Join Auralis and stay protected 24/7</p>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input id="reg-name" type="text" placeholder="Your full name" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input id="reg-email" type="email" placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input id="reg-phone" type="tel" placeholder="+91 XXXXX XXXXX" />
+        </div>
+        <button class="btn-primary full-width" onclick="handleRegister()">
+          <span>Create Account</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <p class="auth-switch">Already registered? <a onclick="toggleAuthMode()">Sign In</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MAIN APP ═══════════════ -->
+  <div id="app-view" class="screen">
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">🛡️</div>
+        <span>Auralis</span>
+      </div>
+      <div class="sidebar-nav">
+        <button class="nav-btn active" id="nav-dashboard" onclick="switchTab('dashboard')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" id="nav-contacts" onclick="switchTab('contacts')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Contacts</span>
+        </button>
+        <button class="nav-btn" id="nav-map" onclick="switchTab('map')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          <span>Tracking</span>
+        </button>
+        <button class="nav-btn" id="nav-notifications" onclick="switchTab('notifications')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span>Alerts</span>
+          <span class="nav-badge" id="notif-badge" style="display:none;">0</span>
+        </button>
+        <button class="nav-btn" id="nav-history" onclick="switchTab('history')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 16 14"/></svg>
+          <span>History</span>
+        </button>
+        <button class="nav-btn" id="nav-settings" onclick="switchTab('settings')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </button>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-avatar-mini" id="sidebar-avatar">U</div>
+        <div class="user-info-mini">
+          <span class="user-name-mini" id="sidebar-name">User</span>
+          <span class="user-status">🟢 Protected</span>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Logout">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- ── DASHBOARD TAB ── -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="page-header">
+          <div>
+            <h1 id="greeting-title">Guardian Active</h1>
+            <p class="page-subtitle" id="greeting-subtitle">Your safety network is online and monitoring</p>
+          </div>
+          <div class="header-actions">
+            <div class="gps-indicator">
+              <div class="pulse-dot green" id="gps-dot"></div>
+              <span id="gps-text">Locating…</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+          <div class="stat-card stat-safety">
+            <div class="stat-icon">🛡️</div>
+            <div class="stat-info">
+              <span class="stat-label">Safety Score</span>
+              <span class="stat-value" id="stat-score">--</span>
+            </div>
+          </div>
+          <div class="stat-card stat-contacts">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+              <span class="stat-label">Contacts</span>
+              <span class="stat-value" id="stat-contacts">--</span>
+            </div>
+          </div>
+          <div class="stat-card stat-alerts">
+            <div class="stat-icon">🔔</div>
+            <div class="stat-info">
+              <span class="stat-label">Unread Alerts</span>
+              <span class="stat-value" id="stat-notifs">--</span>
+            </div>
+          </div>
+          <div class="stat-card stat-emergencies">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-info">
+              <span class="stat-label">Emergencies</span>
+              <span class="stat-value" id="stat-emergencies">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOS + Voice Row -->
+        <div class="action-row">
+          <!-- SOS Button -->
+          <div class="sos-panel">
+            <div class="sos-ring-outer">
+              <div class="sos-ring-inner">
+                <button id="sos-btn" class="sos-btn" onclick="triggerEmergency('Manual SOS')">
+                  <span class="sos-label">SOS</span>
+                  <span class="sos-sub">Hold for Help</span>
+                </button>
+              </div>
+            </div>
+            <p class="sos-hint">Tap to send emergency alert instantly</p>
+          </div>
+
+          <!-- Voice AI Panel -->
+          <div class="voice-panel">
+            <div class="voice-header">
+              <div class="voice-title-group">
+                <span class="panel-label">🎙️ AI Voice Monitor</span>
+                <span class="voice-status-badge" id="voice-status-badge">Inactive</span>
+              </div>
+              <button class="toggle-voice-btn" id="voice-toggle-btn" onclick="toggleVoiceMonitoring()">Activate</button>
+            </div>
+            <div class="voice-waveform" id="voice-waveform">
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            </div>
+            <div class="voice-transcript-box">
+              <p class="transcript-label">Last Detected</p>
+              <p class="transcript-text" id="transcript-display">—</p>
+            </div>
+            <div class="keyword-chips">
+              <span class="chip danger">help</span>
+              <span class="chip danger">danger</span>
+              <span class="chip danger">emergency</span>
+              <span class="chip danger">save me</span>
+              <span class="chip safe">safe</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Map Preview -->
+        <div class="map-preview-panel">
+          <div class="panel-header">
+            <span class="panel-label">📍 Live Location</span>
+            <button class="btn-link" onclick="switchTab('map')">Full Map →</button>
+          </div>
+          <div id="mini-map" class="mini-map"></div>
+        </div>
+
+        <!-- Recent Notifications Preview -->
+        <div class="section-panel">
+          <div class="panel-header">
+            <span class="panel-label">🔔 Recent Alerts</span>
+            <button class="btn-link" onclick="switchTab('notifications')">View All →</button>
+          </div>
+          <div id="recent-notifs-list" class="notif-preview-list">
+            <p class="empty-msg">No recent alerts</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CONTACTS TAB ── -->
+      <div id="tab-contacts" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1>Trusted Contacts</h1>
+            <p class="page-subtitle">People who will be alerted in emergencies</p>
+          </div>
+        </div>
+        <div class="two-col-layout">
+          <div class="add-contact-card card">
+            <h3>Add New Contact</h3>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input id="c-name" type="text" placeholder="Contact name" />
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input id="c-phone" type="tel" placeholder="+91 XXXXX XXXXX" />
+            </div>
+            <div class="form-group">
+              <label>Relation</label>
+              <select id="c-relation">
+                <option>Family</option>
+                <option>Friend</option>
+                <option>Colleague</option>
+                <option>Neighbor</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <button class="btn-primary full-width" onclick="addContact()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add to Network
+            </button>
+          </div>
+          <div class="contacts-list-card card">
+            <h3>My Network <span class="count-badge" id="contacts-count">0</span></h3>
+            <div id="contacts-list" class="contacts-list">
+              <p class="empty-msg">No contacts yet. Add your first trusted contact.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MAP TAB ── -->
+      <div id="tab-map" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1>Live Location Tracking</h1>
+            <p class="page-subtitle">Real-time GPS monitoring and nearby emergency services</p>
+          </div>
+          <div class="gps-indicator">
+            <div class="pulse-dot green" id="gps-dot-map"></div>
+            <span id="gps-text-map">Locating…</span>
+          </div>
+        </div>
+        <div class="map-full-layout">
+          <div id="full-map" class="full-map-container"></div>
+          <div class="nearby-services-panel card">
+            <h3>Nearby Services</h3>
+            <div id="nearby-list" class="nearby-list">
+              <p class="empty-msg">Loading nearby services…</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NOTIFICATIONS TAB ── -->
+      <div id="tab-notifications" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1>Alerts &amp; Notifications</h1>
+            <p class="page-subtitle">All system alerts and push notifications</p>
+          </div>
+          <button class="btn-secondary" onclick="markAllRead()">Mark All Read</button>
+        </div>
+        <div id="notifications-list" class="notifications-full-list card">
+          <p class="empty-msg">No notifications yet</p>
+        </div>
+      </div>
+
+      <!-- ── HISTORY TAB ── -->
+      <div id="tab-history" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1>Emergency History</h1>
+            <p class="page-subtitle">Log of all past emergency events</p>
+          </div>
+        </div>
+        <div id="history-list" class="history-list card">
+          <p class="empty-msg">No emergency history</p>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS TAB ── -->
+      <div id="tab-settings" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1>Settings</h1>
+            <p class="page-subtitle">Manage your Auralis account and preferences</p>
+          </div>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card card">
+            <h3>Profile</h3>
+            <div class="profile-display">
+              <div class="profile-avatar" id="settings-avatar">U</div>
+              <div>
+                <p class="profile-name" id="settings-name">—</p>
+                <p class="profile-email" id="settings-email">—</p>
+                <p class="profile-phone" id="settings-phone">—</p>
+              </div>
+            </div>
+          </div>
+          <div class="settings-card card">
+            <h3>AI Detection Keywords</h3>
+            <div class="keyword-list">
+              <span class="chip danger">help</span>
+              <span class="chip danger">danger</span>
+              <span class="chip danger">emergency</span>
+              <span class="chip danger">save me</span>
+              <span class="chip danger">call police</span>
+              <span class="chip danger">fire</span>
+              <span class="chip danger">attack</span>
+              <span class="chip safe">safe ← cancels alert</span>
+            </div>
+          </div>
+          <div class="settings-card card">
+            <h3>System Information</h3>
+            <div class="info-rows">
+              <div class="info-row"><span>Version</span><span>Auralis v2.0</span></div>
+              <div class="info-row"><span>Backend</span><span>FastAPI + SQLite</span></div>
+              <div class="info-row"><span>Frontend</span><span>Vanilla JS</span></div>
+              <div class="info-row"><span>AI</span><span>Browser Speech API</span></div>
+              <div class="info-row"><span>Tracking</span><span>Browser Geolocation</span></div>
+            </div>
+          </div>
+          <div class="settings-card card danger-zone">
+            <h3>Account</h3>
+            <button class="btn-danger full-width" onclick="logout()">Sign Out &amp; Deactivate Guardian</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════ EMERGENCY COUNTDOWN MODAL ═══════════════ -->
+  <div id="emergency-modal" class="modal-overlay" style="display:none;">
+    <div class="emergency-modal">
+      <div class="emergency-modal-top">
+        <div class="siren-icon">🚨</div>
+        <h2>EMERGENCY ALERT</h2>
+        <p id="emergency-reason">SOS Triggered</p>
+      </div>
+      <div class="countdown-ring">
+        <svg viewBox="0 0 120 120" class="countdown-svg">
+          <circle cx="60" cy="60" r="54" class="countdown-track"/>
+          <circle cx="60" cy="60" r="54" class="countdown-progress" id="countdown-circle"/>
+        </svg>
+        <div class="countdown-number" id="countdown-number">10</div>
+      </div>
+      <p class="countdown-msg">Dispatching to authorities in <strong id="countdown-text">10</strong> seconds…</p>
+      <p class="countdown-location" id="countdown-location">Acquiring GPS location…</p>
+      <div class="emergency-modal-actions">
+        <button class="btn-cancel-emergency" id="cancel-btn" onclick="cancelEmergency()">I AM SAFE — CANCEL</button>
+        <button class="btn-send-now" onclick="sendNow()">SEND NOW</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DISPATCHED CONFIRMATION MODAL ═══════════════ -->
+  <div id="dispatched-modal" class="modal-overlay" style="display:none;">
+    <div class="dispatched-modal">
+      <div class="dispatched-icon">✅</div>
+      <h2>Alert Dispatched</h2>
+      <p id="dispatched-msg">Your emergency alert has been sent. Help is on the way.</p>
+      <div class="dispatched-info" id="dispatched-info"></div>
+      <button class="btn-primary" onclick="closeDispatchedModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

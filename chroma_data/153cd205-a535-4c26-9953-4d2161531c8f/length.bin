@@ -1,0 +1,19 @@
+nt I/O operations without threads:
+
+import asyncio
+
+async def fetch_data(url: str) -> str:
+    # Simulate async I/O
+    await asyncio.sleep(1)
+    return f"Data from {url}"
+
+async def main():
+    # Run multiple coroutines concurrently
+    results = await asyncio.gather(
+        fetch_data("url1"),
+        fetch_data("url2"),
+        fetch_data("url3"),
+    )
+    return results
+
+asyncio.run(main())

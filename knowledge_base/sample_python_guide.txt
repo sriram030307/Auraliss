@@ -1,0 +1,201 @@
+Python Programming: A Comprehensive Guide
+
+Python is a high-level, general-purpose programming language known for its simplicity, readability, and versatility. Created by Guido van Rossum in 1991, Python has become one of the world's most popular programming languages.
+
+Python for AI and Machine Learning
+
+Python is the dominant language for AI/ML development because of its rich ecosystem of libraries:
+
+NumPy: Fundamental package for scientific computing with support for large multi-dimensional arrays and matrices. Provides mathematical functions to operate on these arrays efficiently.
+
+Pandas: Data manipulation and analysis library. Provides DataFrame and Series structures for working with structured data, similar to spreadsheets.
+
+Scikit-learn: Machine learning library built on NumPy and SciPy. Provides simple and efficient tools for data mining and analysis including classification, regression, clustering, and dimensionality reduction.
+
+TensorFlow: Open-source ML framework developed by Google. Used for building and training neural networks, particularly deep learning models.
+
+PyTorch: ML framework developed by Meta. Known for its dynamic computation graph and ease of debugging. Widely used in research.
+
+Hugging Face Transformers: Library providing thousands of pre-trained models for NLP, computer vision, and audio tasks. Makes it easy to fine-tune and deploy LLMs.
+
+FastAPI Framework
+
+FastAPI is a modern, fast web framework for building APIs with Python 3.7+ based on standard Python type hints. Key features include:
+
+Speed: One of the fastest Python frameworks available, on par with NodeJS and Go, thanks to Starlette and Pydantic.
+
+Automatic Documentation: FastAPI automatically generates interactive API documentation using OpenAPI (Swagger UI) and ReDoc.
+
+Data Validation: Uses Pydantic for request and response validation. Type annotations serve as both documentation and validation.
+
+Async Support: Built on ASGI, fully supports async/await for high-performance asynchronous operations.
+
+Dependency Injection: Built-in dependency injection system makes it easy to share logic, database connections, and security checks.
+
+Basic FastAPI Example:
+
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    price: float
+
+@app.post("/items/")
+async def create_item(item: Item):
+    return {"name": item.name, "price": item.price}
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+To run: uvicorn main:app --reload
+
+LangChain Framework
+
+LangChain is a framework for developing applications powered by language models. It provides:
+
+Chains: Sequences of calls to LLMs or other utilities that can be composed together.
+
+Agents: LLMs that can use tools (search, calculator, code executor) to accomplish tasks.
+
+Memory: Components for persisting state between chain or agent calls.
+
+Retrievers: Components that retrieve relevant documents from a knowledge source.
+
+Document Loaders: Tools for loading data from various sources (PDFs, web pages, databases).
+
+Text Splitters: Utilities for breaking documents into chunks suitable for embedding.
+
+LangChain RAG Example:
+
+from langchain.vectorstores import Chroma
+from langchain.embeddings import OpenAIEmbeddings  
+from langchain.chains import RetrievalQA
+from langchain.llms import OpenAI
+
+# Create vector store from documents
+vectorstore = Chroma.from_documents(documents, OpenAIEmbeddings())
+
+# Create retrieval chain
+qa_chain = RetrievalQA.from_chain_type(
+    llm=OpenAI(),
+    retriever=vectorstore.as_retriever()
+)
+
+# Query
+result = qa_chain.run("What is machine learning?")
+
+Python Virtual Environments
+
+Virtual environments are isolated Python environments that keep project dependencies separate:
+
+Creating a virtual environment:
+python -m venv venv
+
+Activating on Windows:
+venv\Scripts\activate
+
+Activating on macOS/Linux:
+source venv/bin/activate
+
+Installing packages:
+pip install -r requirements.txt
+
+Deactivating:
+deactivate
+
+Always use virtual environments to avoid dependency conflicts between projects.
+
+Environment Variables and .env Files
+
+Managing configuration with environment variables is a best practice for Python applications:
+
+Using python-dotenv:
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+
+Using pydantic-settings:
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    openai_api_key: str
+    debug: bool = False
+    
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+
+Always add .env to .gitignore and commit only .env.example with placeholder values.
+
+Python Async Programming
+
+Python's asyncio library enables concurrent I/O operations without threads:
+
+import asyncio
+
+async def fetch_data(url: str) -> str:
+    # Simulate async I/O
+    await asyncio.sleep(1)
+    return f"Data from {url}"
+
+async def main():
+    # Run multiple coroutines concurrently
+    results = await asyncio.gather(
+        fetch_data("url1"),
+        fetch_data("url2"),
+        fetch_data("url3"),
+    )
+    return results
+
+asyncio.run(main())
+
+FastAPI routes should be defined as async functions to take advantage of async I/O for database queries, external API calls, and file operations.
+
+Python Type Hints
+
+Type hints improve code readability and enable static analysis tools:
+
+from typing import List, Dict, Optional, Tuple, Union
+
+def process_messages(
+    messages: List[Dict[str, str]],
+    session_id: Optional[str] = None,
+    temperature: float = 0.7,
+) -> Tuple[str, List[str]]:
+    """Process messages and return response with sources."""
+    ...
+
+Type hints are used by FastAPI and Pydantic for automatic validation and documentation generation.
+
+Testing Python Applications
+
+Pytest is the recommended testing framework for Python:
+
+import pytest
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_health_check():
+    response = client.get("/api/v1/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+
+@pytest.mark.asyncio
+async def test_chat_endpoint():
+    response = client.post("/api/v1/chat", json={
+        "message": "Hello, Auralis!",
+        "use_rag": False
+    })
+    assert response.status_code == 200
+    assert "response" in response.json()
+
+Mocking external services (like OpenAI API) in tests avoids unnecessary costs and makes tests reliable.

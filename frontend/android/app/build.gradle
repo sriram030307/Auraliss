@@ -3,6 +3,12 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.auralis.app"
     compileSdk = rootProject.ext.compileSdkVersion
+    
+    compileOptions {
+        sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
+        targetCompatibility = rootProject.ext.targetCompatibilityVersion
+    }
+    
     defaultConfig {
         applicationId "com.auralis.app"
         minSdkVersion rootProject.ext.minSdkVersion

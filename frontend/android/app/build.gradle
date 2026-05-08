@@ -3,10 +3,15 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.auralis.app"
     compileSdk = rootProject.ext.compileSdkVersion
+    compileSdk 34
     
     compileOptions {
-        sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
-        targetCompatibility = rootProject.ext.targetCompatibilityVersion
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
     }
     
     defaultConfig {
